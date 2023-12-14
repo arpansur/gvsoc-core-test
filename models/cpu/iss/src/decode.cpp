@@ -361,6 +361,7 @@ void Decode::decode_pc(iss_insn_t *insn, iss_reg_t pc)
     }
 
     insn->opcode = opcode;
+    insn->next = insn + insn->size / 2;
 
     if (iss.trace.insn_trace.get_active() || iss.timing.insn_trace_event.get_event_active())
     {

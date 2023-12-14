@@ -240,7 +240,7 @@ void name##_fast_wrapper(vp::Block *__this, vp::ClockEvent *event) \
     Iss *const iss = (Iss *)__this; \
     iss_reg_t pc = iss->exec.current_insn; \
     iss_insn_t *insn = iss->exec.current_insn_struct; \
-    iss_insn_t *next_insn = insn + insn->size / 2; \
+    iss_insn_t *next_insn = insn->next; \
     iss->exec.current_insn_struct = next_insn; \
     iss->exec.instr_event.set_callback(next_insn->fast_wrapper); \
     iss->exec.current_insn = name##_exec(iss, insn, pc); \
