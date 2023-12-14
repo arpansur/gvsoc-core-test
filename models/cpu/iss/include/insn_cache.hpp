@@ -21,6 +21,9 @@
 
 #pragma once
 
+#include <cpu/iss/include/types.hpp>
+#include ISS_CORE_INC(class.hpp)
+
 // The size of a page corresponds to the tlb page size with instructions of at least 2 bytes
 #define INSN_PAGE_BITS 9
 #define INSN_PAGE_SIZE (1 << (INSN_PAGE_BITS - 1))
@@ -71,6 +74,7 @@ inline void InsnCache::insn_init(iss_insn_t *insn, iss_addr_t addr)
 {
     insn->handler = iss_decode_pc_handler;
     insn->fast_handler = iss_decode_pc_handler;
+    insn->fast_wrapper = &Exec::exec_fast_wrapper_and_update;
     insn->addr = addr;
 #if defined(CONFIG_GVSOC_ISS_RI5KY)
     insn->hwloop_handler = NULL;

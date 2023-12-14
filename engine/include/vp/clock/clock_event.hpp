@@ -121,6 +121,7 @@ namespace vp
          */
         inline void set_callback(ClockEventMeth *meth);
 
+        inline ClockEventMeth *get_callback() { return this->meth; }
         /**
          * @brief Get the event arguments
          *

@@ -615,6 +615,12 @@ class Isa(object):
         dump(isaFile, '#include <cpu/iss/include/iss.hpp>\n')
         dump(isaFile, '\n')
 
+        declared_insn = {}
+        for insn in self.get_insns():
+            if declared_insn.get(insn.name) is None:
+                declared_insn[insn.name] = insn
+                dump(isaFile, f'ISS_INSN_FAST_WRAPPER({insn.name});\n')
+
         dump(isaFile, 'static iss_resource_t __iss_resources[]\n')
         dump(isaFile, '{\n')
         for resource in self.resources:
@@ -659,7 +665,7 @@ class Isa(object):
 
 class Instr(object):
     def __init__(self, label, format, encoding, decode=None, L=None,
-            fast_handler=False, tags=[], isa_tags=[], is_macro_op=False):
+            fast_handler=False, tags=[], isa_tags=[], is_macro_op=False, no_fast_wrapper=False):
         self.tags = tags
         self.isa_tags = isa_tags
         self.out_reg_latencies = []
@@ -672,6 +678,7 @@ class Instr(object):
         self.args_format = format
         self.label = label
         self.active = True
+        self.no_fast_wrapper = no_fast_wrapper
 
         # Reverse the encoding string
         encoding = encoding[::-1].replace(' ', '')
@@ -737,6 +744,7 @@ class Instr(object):
         name = self.get_full_name()
 
         resource_id = -1 if self.resource is None else isa.get_resource_index(self.resource)
+        fast_wrapper = '&Exec::exec_fast_wrapper_and_update' if self.no_fast_wrapper else f'{self.name}_fast_wrapper'
 
         dump(isaFile, f'static iss_decoder_item_t {name} = {{\n')
         dump(isaFile, f'  .is_insn=true,\n')
@@ -747,6 +755,7 @@ class Instr(object):
         dump(isaFile, f'    .insn={{\n')
         dump(isaFile, f'      .handler={self.exec_func},\n')
         dump(isaFile, f'      .fast_handler={self.exec_func_fast},\n')
+        dump(isaFile, f'      .fast_wrapper={fast_wrapper},\n')
         dump(isaFile, f'      .decode={"NULL" if self.decode is None else self.decode},\n')
         dump(isaFile, f'      .label=(char *)"{self.get_label()}",\n')
         dump(isaFile, f'      .size={int(self.len/8)},\n')

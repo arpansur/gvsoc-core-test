@@ -58,6 +58,7 @@ private:
 
 iss_reg_t iss_fetch_pc_handler(Iss *iss, iss_insn_t *insn, iss_reg_t pc);
 iss_reg_t iss_decode_pc_handler(Iss *iss, iss_insn_t *insn, iss_reg_t pc);
+void iss_decode_pc_wrapper(vp::Block *__this, vp::ClockEvent *event);
 
 typedef struct
 {

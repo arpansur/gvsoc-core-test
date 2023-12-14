@@ -151,6 +151,7 @@ void Exec::dbg_unit_step_check()
 
 
 
+
 void Exec::exec_instr(vp::Block *__this, vp::ClockEvent *event)
 {
     Iss *const iss = (Iss *)__this;
@@ -176,6 +177,60 @@ void Exec::exec_instr(vp::Block *__this, vp::ClockEvent *event)
         // Since power instruction information is filled when the instruction is decoded,
         // make sure we account it only after the instruction is executed
         iss->exec.insn_exec_power(insn);
+    }
+}
+
+
+void Exec::exec_fast_wrapper_and_update(vp::Block *__this, vp::ClockEvent *event)
+{
+    Iss *const iss = (Iss *)__this;
+
+    iss->exec.trace.msg(vp::Trace::LEVEL_TRACE, "Handling instruction with fast handler and update\n");
+
+    iss_reg_t pc = iss->exec.current_insn;
+    iss_insn_t *insn = iss->exec.current_insn_struct;
+
+    // Execute the instruction and replace the current one with the new one
+    iss->exec.current_insn = insn->fast_handler(iss, insn, pc);
+
+    if (iss->exec.instr_event.get_callback() == &Exec::exec_fast_wrapper_and_update)
+    {
+        iss_reg_t index;
+        iss_insn_t *next_insn = iss->insn_cache.get_insn(iss->exec.current_insn, index);
+
+        if (likely(next_insn != NULL))
+        {
+            iss->exec.current_insn_struct = next_insn;
+            iss->exec.instr_event.set_callback(next_insn->fast_wrapper);
+        }
+        else
+        {
+            iss->exec.instr_event.set_callback(&Exec::switch_to_fast_wrapper);
+        }
+    }
+}
+
+
+void Exec::switch_to_fast_wrapper(vp::Block *__this, vp::ClockEvent *event)
+{
+    Iss *const iss = (Iss *)__this;
+
+    iss->exec.trace.msg(vp::Trace::LEVEL_TRACE, "Handling instruction with fast handler\n");
+
+    iss_reg_t pc = iss->exec.current_insn;
+
+#if defined(CONFIG_GVSOC_ISS_TIMED)
+    if (iss->prefetcher.fetch(pc))
+#endif
+    {
+        iss_reg_t index;
+        iss_insn_t *insn = iss->insn_cache.get_insn(pc, index);
+        if (insn == NULL) return;
+
+        iss->exec.current_insn_struct = insn;
+        iss->exec.instr_event.set_callback(iss->exec.current_insn_struct->fast_wrapper);
+        insn->fast_wrapper((vp::Block *)iss, event);
+        return;
     }
 }
 
@@ -255,7 +310,7 @@ void Exec::exec_instr_check_all(vp::Block *__this, vp::ClockEvent *event)
     // if HW counters are disabled as they are checked with the slow handler
     if (_this->can_switch_to_fast_mode())
     {
-        _this->instr_event.set_callback(&Exec::exec_instr);
+        _this->instr_event.set_callback(&Exec::switch_to_fast_wrapper);
     }
 
     _this->insn_exec_profiling();

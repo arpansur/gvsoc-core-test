@@ -243,6 +243,14 @@ int Decode::decode_insn(iss_insn_t *insn, iss_reg_t pc, iss_opcode_t opcode, iss
     }
 
     insn->fast_handler = item->u.insn.fast_handler;
+    if (((insn->addr >> 1) & INSN_PAGE_MASK) != (((insn->addr + insn->size) >> 1) & INSN_PAGE_MASK))
+    {
+        insn->fast_wrapper = &Exec::exec_fast_wrapper_and_update;
+    }
+    else
+    {
+        insn->fast_wrapper = item->u.insn.fast_wrapper;
+    }
     insn->handler = item->u.insn.handler;
 
 #if defined(CONFIG_GVSOC_ISS_RI5KY)

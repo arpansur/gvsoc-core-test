@@ -316,6 +316,7 @@ typedef struct iss_decoder_item_s
         {
             iss_reg_t (*handler)(Iss *, iss_insn_t *, iss_reg_t);
             iss_reg_t (*fast_handler)(Iss *, iss_insn_t *, iss_reg_t);
+            void (*fast_wrapper)(vp::Block *__this, vp::ClockEvent *event);
             void (*decode)(Iss *, iss_insn_t *, iss_reg_t pc);
             char *label;
             int size;
@@ -343,6 +344,7 @@ typedef struct iss_decoder_item_s
 typedef struct iss_insn_s
 {
     iss_reg_t (*fast_handler)(Iss *, iss_insn_t *, iss_reg_t);
+    void (*fast_wrapper)(vp::Block *__this, vp::ClockEvent *event);
     unsigned char out_regs[ISS_MAX_NB_OUT_REGS];
     unsigned char in_regs[ISS_MAX_NB_IN_REGS];
     void *out_regs_ref[ISS_MAX_NB_OUT_REGS];
@@ -378,6 +380,8 @@ typedef struct iss_insn_s
 
     iss_insn_t *expand_table;
     bool is_macro_op;
+
+    iss_insn_t *next;
 
 } iss_insn_t;
 

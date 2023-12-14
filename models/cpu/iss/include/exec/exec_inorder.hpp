@@ -89,12 +89,16 @@ public:
 
     iss_reg_t current_insn;
     vp::ClockEvent instr_event;
+    iss_insn_t *current_insn_struct;
+
     vp::reg_64 stalled;
 
     vp::Trace trace;
 
     static void exec_instr(vp::Block *__this, vp::ClockEvent *event);
+    static void exec_fast_wrapper_and_update(vp::Block *__this, vp::ClockEvent *event);
     static void exec_instr_check_all(vp::Block *__this, vp::ClockEvent *event);
+    static void switch_to_fast_wrapper(vp::Block *__this, vp::ClockEvent *event);
 
 #if defined(CONFIG_GVSOC_ISS_RI5KY)
     void hwloop_set_start(int index, iss_reg_t pc);

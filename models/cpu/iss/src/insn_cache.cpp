@@ -95,6 +95,7 @@ InsnPage *InsnCache::page_get(iss_reg_t paddr)
     for (int i=0; i<INSN_PAGE_SIZE; i++)
     {
         insn_init(&page->insns[i], addr);
+        page->insns[i].next = &page->insns[i+1];
         addr += 2;
     }
 
