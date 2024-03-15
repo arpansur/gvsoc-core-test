@@ -180,3 +180,4 @@ private:
 #include "cpu/iss/include/isa/priv.hpp"
 #include "cpu/iss/include/isa/rv32frep.hpp"
 #include "cpu/iss/include/isa/rv32ssr.hpp"
+#include <cpu/iss/include/isa/xdma.hpp>

@@ -184,12 +184,15 @@ void Iss::handle_notif(vp::Block *__this, OffloadReq *req)
     // If SSR is enabled, the latency of instruction includes memory access + execution time in fpu.
     if (_this->ssr.ssr_enable)
     {
-        insn.latency += _this->exec.instr_event.stall_cycle_get();
+        // insn.latency += _this->exec.instr_event.stall_cycle_get();
+        insn.latency += _this->exec.stall_cycles;
     }
     // If SSR is disabled, the instruction is either memory access or arithmetic instruction.
-    if (insn.latency < _this->exec.instr_event.stall_cycle_get())
+    // if (insn.latency < _this->exec.instr_event.stall_cycle_get())
+    if (insn.latency < _this->exec.stall_cycles)
     {
-        insn.latency = _this->exec.instr_event.stall_cycle_get();
+        // insn.latency = _this->exec.instr_event.stall_cycle_get();
+        insn.latency = _this->exec.stall_cycles;
     }
     _this->trace_iss.msg("Total latency of fp instruction (opcode: 0x%llx, pc: 0x%llx, latency: %d)\n", opcode, pc, insn.latency);
 
@@ -278,7 +281,8 @@ void Iss::handle_event(vp::Block *__this, vp::ClockEvent *event)
     }
 
     // Clear stalling cycle amount for the next instruction.
-    _this->exec.instr_event.stall_cycle_set(0);
+    // _this->exec.instr_event.stall_cycle_set(0);
+    _this->exec.stall_cycles = 0;
 
 }
 

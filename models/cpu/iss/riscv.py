@@ -306,7 +306,13 @@ class RiscvCommon(st.Component):
             The slave interface
         """
         return gvsoc.systree.SlaveItf(self, itf_name='bootaddr', signature='wire<uint64_t>')
+    
+    def o_OFFLOAD(self, itf: gvsoc.systree.SlaveItf):
+        self.itf_bind('offload', itf, signature=f'wire<IssOffloadInsn<uint{self.isa.word_size}_t>*>')
 
+    def i_OFFLOAD_GRANT(self) -> gvsoc.systree.SlaveItf:
+        return gvsoc.systree.SlaveItf(self, itf_name='offload_grant',
+            signature=f'wire<IssOffloadInsnGrant<uint{self.isa.word_size}_t>*>')
 
     def gen_gtkw_conf(self, tree, traces):
         if tree.get_view() == 'overview':
@@ -432,11 +438,16 @@ class Snitch(RiscvCommon):
             timed: bool=True):
 
 
-        extensions = [ Rv32ssr(), Rv32frep(), Rv32v(), Xf16(), Xf16alt(), Xf8(), Xfvec(), Xfaux() ]
+        extensions = [ Rv32ssr(), Rv32frep(), Rv32v(), Xf16(), Xf16alt(), Xf8(), Xfvec(), Xfaux(), Xdma() ]
         
         isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_" + isa, isa, extensions=extensions)
-        misa = 0x40801129
+        
+        if misa is None:
+            # misa = isa_instance.misa
+            misa = 0x40801129
 
+        # super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True, riscv_exceptions=True,
+        #                  fetch_enable=fetch_enable, boot_addr=boot_addr, core_id=core_id, timed=timed, prefetcher_size=32)
         super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True, core_id=core_id, timed=timed, prefetcher_size=32)
 
         self.add_c_flags([
@@ -450,6 +461,9 @@ class Snitch(RiscvCommon):
             "cpu/iss/src/spatz.cpp",
             "cpu/iss/src/ssr.cpp",
         ])
+        
+    def o_BARRIER_REQ(self, itf: gvsoc.systree.SlaveItf):
+        self.itf_bind('barrier_req', itf, signature='wire<bool>')
 
 
 # Snitch FP subsystem
@@ -467,13 +481,17 @@ class Snitch_fp_ss(RiscvCommon):
             timed: bool=False):
 
 
-        extensions = [ Rv32ssr(), Rv32frep(), Rv32v(), Xf16(), Xf16alt(), Xf8(), Xfvec(), Xfaux() ]
+        extensions = [ Rv32ssr(), Rv32frep(), Rv32v(), Xf16(), Xf16alt(), Xf8(), Xfvec(), Xfaux(), Xdma() ]
     
         isa_instance = cpu.iss.isa_gen.isa_riscv_gen.RiscvIsa("snitch_" + isa, isa, extensions=extensions)
-        misa = 0x40801129
+        if misa is None:
+            # misa = isa_instance.misa
+            misa = 0x40801129
 
+        # super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True, riscv_exceptions=True,
+        #                  fetch_enable=fetch_enable, boot_addr=boot_addr, core_id=core_id, timed=timed, prefetcher_size=32)
         super().__init__(parent, name, isa=isa_instance, misa=misa, core="snitch", scoreboard=True, core_id=core_id, timed=timed, prefetcher_size=32)
-
+        
         self.add_c_flags([
             "-DPIPELINE_STALL_THRESHOLD=0",
             "-DPIPELINE_STAGES=1",
@@ -485,6 +503,9 @@ class Snitch_fp_ss(RiscvCommon):
             "cpu/iss/src/spatz.cpp",
             "cpu/iss/src/ssr.cpp",
         ])
+    
+    def o_BARRIER_REQ(self, itf: gvsoc.systree.SlaveItf):
+        self.itf_bind('barrier_req', itf, signature='wire<bool>')
 
 
 class Spatz(RiscvCommon):
