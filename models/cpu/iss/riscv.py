@@ -88,7 +88,10 @@ class RiscvCommon(st.Component):
             prefetcher_size=None,
             wrapper="pulp/cpu/iss/default_iss_wrapper.cpp",
             memory_start=None,
-            memory_size=None):
+            memory_size=None,
+            handle_misaligned=False,
+            external_pccr=False,
+            htif=False):
 
         super().__init__(parent, name)
 
@@ -197,8 +200,9 @@ class RiscvCommon(st.Component):
             self.add_c_flags(['-DCONFIG_GVSOC_ISS_RISCV_EXCEPTIONS=1'])
         else:
             self.add_sources(["cpu/iss/src/irq/irq_external.cpp"])
-
-
+            
+        if handle_misaligned:
+            self.add_c_flags(['-DCONFIG_GVSOC_ISS_HANDLE_MISALIGNED=1'])
 
     def gen_gtkw(self, tree, comp_traces):
 
