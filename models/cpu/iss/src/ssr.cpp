@@ -374,7 +374,17 @@ iss_reg_t Ssr::cfg_read(iss_insn_t *insn, int reg, int ssr)
     {
         if (unlikely(reg == 0))
         {
-            value = this->dm0.config.get_REG_STATUS();
+            // value = this->dm0.config.get_REG_STATUS();
+            if (this->dm0.is_write)
+            {
+                value = ((this->dm0.ssr_done&0x1) << 31) + (0x1 << 30) + ((this->dm0.config.DIM&0x3) << 28) + 
+                    (this->dm0.config.REG_WPTR[this->dm0.config.DIM] & 0x07ffffff);
+            }
+            else
+            {
+                value = ((this->dm0.ssr_done&0x1) << 31) + (0x0 << 30) + ((this->dm0.config.DIM&0x3) << 28) 
+                    + (this->dm0.config.REG_RPTR[this->dm0.config.DIM] & 0x07ffffff);
+            }
         }
         else if (unlikely(reg == 1))
         {
@@ -408,7 +418,17 @@ iss_reg_t Ssr::cfg_read(iss_insn_t *insn, int reg, int ssr)
     {
         if (unlikely(reg == 0))
         {
-            value = this->dm1.config.get_REG_STATUS();
+            // value = this->dm1.config.get_REG_STATUS();
+            if (this->dm1.is_write)
+            {
+                value = ((this->dm1.ssr_done&0x1) << 31) + (0x1 << 30) + ((this->dm1.config.DIM&0x3) << 28) 
+                    + (this->dm1.config.REG_WPTR[this->dm1.config.DIM] & 0x07ffffff);
+            }
+            else
+            {
+                value = ((this->dm1.ssr_done&0x1) << 31) + (0x0 << 30) + ((this->dm1.config.DIM&0x3) << 28) 
+                    + (this->dm1.config.REG_RPTR[this->dm1.config.DIM] & 0x07ffffff);
+            }
         }
         else if (unlikely(reg == 1))
         {
@@ -442,7 +462,17 @@ iss_reg_t Ssr::cfg_read(iss_insn_t *insn, int reg, int ssr)
     {
         if (unlikely(reg == 0))
         {
-            value = this->dm2.config.get_REG_STATUS();
+            // value = this->dm2.config.get_REG_STATUS();
+            if (this->dm2.is_write)
+            {
+                value = ((this->dm2.ssr_done&0x1) << 31) + (0x1 << 30) + ((this->dm2.config.DIM&0x3) << 28) + 
+                    (this->dm2.config.REG_WPTR[this->dm2.config.DIM] & 0x07ffffff);
+            }
+            else
+            {
+                value = ((this->dm2.ssr_done&0x1) << 31) + (0x0 << 30) + ((this->dm2.config.DIM&0x3) << 28) + 
+                    (this->dm2.config.REG_RPTR[this->dm2.config.DIM] & 0x07ffffff);
+            }
         }
         else if (unlikely(reg == 1))
         {

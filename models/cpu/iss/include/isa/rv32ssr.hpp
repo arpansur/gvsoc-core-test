@@ -31,6 +31,7 @@
 static inline iss_reg_t scfgri_exec(Iss *iss, iss_insn_t *insn, iss_reg_t pc)
 {
 #ifdef CONFIG_GVSOC_ISS_SNITCH
+    iss->exec.trace.msg("UIM_GET(0) %d, UIM_GET(1) %d\n", UIM_GET(0), UIM_GET(1));
     REG_SET(0, iss->ssr.cfg_read(insn, UIM_GET(1), UIM_GET(0)));
 #endif
     return iss_insn_next(iss, insn, pc);
